@@ -25,44 +25,42 @@ func main() {
 	mux.HandleFunc("/bye", sayBye)
 
 	// 子协程
-	group.Go(func() error {
+	g.Go(func() error {
 		server = &http.Server{
-			Addr:         ":1210",
+			Addr: ":1210",
 			WriteTimeout: time.Second * 4,
-			Handler:      mux
-		}	
+			Handler: mux}	
 		return nil
 	})
 
 	// 捕获err
-	if err := group.Wait(); err != nil {
+	if err := g.Wait(); err != nil {
 		log.Fatal("Get errors: ", err)
 	}else {
 		log.Println("Get all num successfully!")
 	}
 
-}
-go func() {
+
+	go func() {
 	// 接收退出信号
-	<-quit
-	if err := server.Close(); err != nil {
-		log.Fatal("Close server:", err)
-	}
-}()
+		<-quit
+		if err := server.Close(); err != nil {
+			log.Fatal("Close server:", err)
+		}
+	}()
 
-log.Println("Starting httpServer")
-err := server.ListenAndServe()
-if err != nil {
-	// 正常退出
-	if err == http.ErrServerClosed {
-		log.Fatal("Server closed under request")
-	} else {
-		log.Fatal("Server closed unexpected", err)
+	log.Println("Starting httpServer")
+	err := server.ListenAndServe()
+	if err != nil {
+		// 正常退出
+		if err == http.ErrServerClosed {
+			log.Fatal("Server closed under request")
+		} else {
+			log.Fatal("Server closed unexpected", err)
+		}
 	}
-}
-  log.Fatal("Server exited")
-
-}
+  	log.Fatal("Server exited")
+	}
 
 type myHandler struct{}
 
